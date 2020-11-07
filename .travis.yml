@@ -8,7 +8,7 @@ services:
 - docker
 script:
 - export DOCKER_CLI_EXPERIMENTAL=enabled
-- source sha_function.sh
+- source utils.sh
 - debian_arm_sha=$(get_manifest_sha "treehouses/debian:latest" "arm")
 - echo $debian_arm_sha
 - apache_arm_sha=$(get_manifest_sha "treehouses/apache:latest" "arm")
@@ -29,17 +29,16 @@ script:
 - echo $flag_arm64
 - echo $DOCKERAPIKEY | docker login -u "sevenseas" --password-stdin
 - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-- "./docker-build.sh treehouses/debian:latest arm"
-- "./docker-build.sh treehouses/debian:latest arm64"
-- "./docker-build.sh treehouses/debian:latest amd64"
-- flag=$(compare "treehouses/debian@"$debian_arm_sha "treehouses/apache@"$apache_arm_sha
-  "treehouses/debian@"$debian_amd64_sha "treehouses/apache@"$apache_amd64_sha "treehouses/debian@"$debian_arm64_sha
-  "treehouses/apache@"$apache_arm64_sha "treehouses/apache:latest" "treehouses/apache-tags:amd64")
+- build_image "treehouses/debian:latest" arm "treehouses/apache"
+- build_image "treehouses/debian:latest" amd64 "treehouses/apache"
+- build_image "treehouses/debian:latest" arm64 "treehouses/apache"
+- flag=$(compare "treehouses/debian@"$debian_arm_sha "treehouses/apache@"$apache_arm_sha "treehouses/debian@"$debian_amd64_sha "treehouses/apache@"$apache_amd64_sha "treehouses/debian@"$debian_arm64_sha "treehouses/apache@"$apache_arm64_sha "treehouses/apache:latest" "treehouses/apache-tags:amd64")
 - echo $flag
+#- flag=false
 before_deploy:
-- "./deploy.sh arm"
-- "./deploy.sh arm64"
-- "./deploy.sh amd64"
+- deploy_image "treehouses/apache" arm
+- deploy_image "treehouses/apache" amd64
+- deploy_image "treehouses/apache" arm64
 - timetag=$(date +%Y%m%d%H%M)
 - echo $timetag
 - tag1="latest"
