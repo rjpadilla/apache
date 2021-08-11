@@ -1,4 +1,5 @@
-FROM {{base_image}}
+ARG BASE=
+FROM ${BASE}
 
 RUN apt-get update -y   && apt-get install -y apache2
 
